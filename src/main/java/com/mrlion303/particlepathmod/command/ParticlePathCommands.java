@@ -23,13 +23,14 @@ public final class ParticlePathCommands {
         if(d.contains(name)){s.sendFailure(Component.literal("Ya existe el camino '"+name+"'. Usa otro nombre."));return 0;}
         try{
             var player=s.getPlayerOrException();
-            List<BlockPos> pts=PathSelectionManager.get(player.getUUID());
-            if(pts.size()<2){s.sendFailure(Component.literal("Marca A y al menos B con el palo antes de crear el camino."));return 0;}
+            List<BlockPos> selection=PathSelectionManager.get(player.getUUID());
+            if(selection.size()<2){s.sendFailure(Component.literal("Marca A y al menos B con el palo antes de crear el camino."));return 0;}
             String normalizedParticle=ParticleSpecParser.normalize(particle);
             if(ParticleSpecParser.parse(normalizedParticle)==null) throw new IllegalArgumentException("Partícula inválida.");
-            pts=PathSelectionManager.consumeSelection(player.getUUID());
+            List<BlockPos> pts=PathSelectionManager.consumeSelection(player.getUUID());
             d.put(new ParticlePath(name,normalizedParticle,pts,false));
-            s.sendSuccess(()->Component.literal("Camino '"+name+"' creado con "+pts.size()+" puntos."),true);
+            int pointCount=pts.size();
+            s.sendSuccess(()->Component.literal("Camino '"+name+"' creado con "+pointCount+" puntos."),true);
             return 1;
         }catch(Exception e){s.sendFailure(Component.literal("Partícula inválida: "+particle));return 0;}
     }
