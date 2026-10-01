@@ -1,0 +1,14 @@
+name: ParticlePathPlugin
+version: 1.0.0
+main: com.mrlion303.particlepathplugin.ParticlePathPlugin
+api-version: '1.20'
+authors: [LAYON, NegativeStudios]
+description: Persistent particle paths for Minecraft 1.20.1
+commands:
+  particlepath:
+    description: Create and manage persistent particle paths.
+    usage: /particlepath <create|modify|show|hide|remove|list>
+    permission: particlepath.use
+permissions:
+  particlepath.use:
+    default: op
