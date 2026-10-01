@@ -23,7 +23,6 @@ public final class ParticlePathCommands {
         try{
             var player=s.getPlayerOrException(); List<BlockPos> pts=PathSelectionManager.consumeSelection(player.getUUID());
             if(pts.size()<2){s.sendFailure(Component.literal("Marca A y al menos B con el palo antes de crear el camino."));return 0;}
-            new net.minecraft.commands.arguments.ParticleArgument();
             com.mojang.brigadier.StringReader reader=new com.mojang.brigadier.StringReader(particle);
             net.minecraft.commands.arguments.ParticleArgument.readParticle(reader,net.minecraft.core.registries.BuiltInRegistries.PARTICLE_TYPE);
             d.put(new ParticlePath(name,particle,pts,false));
