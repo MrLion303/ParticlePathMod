@@ -58,10 +58,7 @@ public final class ParticleSpecParser {
     public static ParticleOptions parse(String specification) {
         try {
             StringReader reader = new StringReader(normalize(specification));
-            ResourceLocation id = ResourceLocation.read(reader);
-            ParticleType<?> type = BuiltInRegistries.PARTICLE_TYPE.get(id);
-            if (type == null) return null;
-            return ParticleArgument.readParticle(reader, (ParticleType) type);
+            return ParticleArgument.readParticle(reader, BuiltInRegistries.PARTICLE_TYPE.asLookup());
         } catch (Exception e) {
             return null;
         }
