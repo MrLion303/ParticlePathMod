@@ -12,5 +12,5 @@ public class ParticlePath {
     }
     public String getName(){return name;} public List<BlockPos> getPoints(){return points;}
     public String getParticle(){return particle;} public boolean isVisible(){return visible;}
-    public void setVisible(boolean value){visible=value;} public void addPoint(BlockPos pos){points.add(pos.immutable());}
+    public void setVisible(boolean value){visible=value;} public void setParticle(String value){particle=value;} public void addPoint(BlockPos pos){points.add(pos.immutable());}
 }
