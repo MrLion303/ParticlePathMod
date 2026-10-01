@@ -18,12 +18,13 @@ public class ParticlePathEvents {
     private static final double SPACING=.5D;
     @SubscribeEvent public void left(PlayerInteractEvent.LeftClickBlock e){
         if(!(e.getEntity() instanceof ServerPlayer p)||!e.getItemStack().is(Items.STICK))return;
-        BlockPos pos=e.getPos().immutable();PathSelectionManager.reset(p.getUUID(),pos);
+        BlockPos pos=e.getPos().immutable();e.setCanceled(true);PathSelectionManager.reset(p.getUUID(),pos);
         p.displayClientMessage(net.minecraft.network.chat.Component.literal("Punto A: "+pos.getX()+", "+pos.getY()+", "+pos.getZ()),true);
     }
     @SubscribeEvent public void right(PlayerInteractEvent.RightClickBlock e){
         if(!(e.getEntity() instanceof ServerPlayer p)||!e.getItemStack().is(Items.STICK))return;
         BlockPos pos=e.getPos().immutable();
+        e.setCanceled(true);
         if(!PathSelectionManager.append(p.getUUID(),pos)){
             p.displayClientMessage(net.minecraft.network.chat.Component.literal("Primero selecciona el punto A con clic izquierdo."),true);return;
         }
