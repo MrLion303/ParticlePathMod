@@ -5,64 +5,64 @@ Forge 1.20.1 mod for creating persistent particle paths between block positions.
 ## Seleccionar un camino
 
 Usa un palo:
-
-- **Clic izquierdo sobre un bloque:** selecciona el punto **A** y reinicia la selección actual.
-- **Clic derecho sobre bloques:** añade **B, C, D, E...** en ese orden.
+- Clic izquierdo sobre un bloque: selecciona el punto A y reinicia la selección actual.
+- Clic derecho sobre bloques: añade B, C, D, E... en ese orden.
 - Puedes hacer tantos puntos como quieras.
-- Para reiniciar el recorrido, vuelve a hacer **clic izquierdo** en otro bloque: ese bloque pasa a ser el nuevo A.
+- Para reiniciar el recorrido, vuelve a hacer clic izquierdo en otro bloque: ese bloque pasa a ser el nuevo A.
 
 El palo solamente selecciona puntos; no rompe ni interactúa con los bloques.
 
 ## Crear un camino
 
 Después de marcar al menos A y B:
-
-`/particlepath create <nombre> <partícula>`
+/particlepath create <nombre> <partícula>
 
 Ejemplo:
+/particlepath create entrada minecraft:flame
 
-`/particlepath create entrada minecraft:flame`
+### Colores de dust
 
-También admite partículas con argumentos, por ejemplo las partículas de polvo:
+Para minecraft:dust ya no necesitas convertir el color manualmente a RGB. Puedes escribir un nombre de color o un código hexadecimal.
 
-`/particlepath create rojo minecraft:dust 1 0 0 1`
+Ejemplos:
+/particlepath create rojo minecraft:dust red
+/particlepath create azul minecraft:dust #0080FF
+/particlepath create grande minecraft:dust #FF00FF 2
 
-El camino queda guardado en los datos del mundo.
+Se aceptan nombres comunes como red, green, blue, yellow, cyan, magenta, purple, orange, pink, white, black, gray, lime y brown, además de navy, teal, violet, light_blue y dark_blue.
+
+Hexadecimal: #RRGGBB, RRGGBB, #RGB o RGB.
+
+La sintaxis original también sigue funcionando:
+/particlepath create rojo minecraft:dust 1 0 0 1
 
 ## Mostrar / ocultar
 
-`/particlepath show <nombre>`
+/particlepath show <nombre>
 
 Activa la generación continua de partículas.
 
-`/particlepath hide <nombre>`
+/particlepath hide <nombre>
 
 Deja de generar nuevas partículas para ese camino.
-
-Ejemplos:
-
-`/particlepath show entrada`
-
-`/particlepath hide entrada`
 
 Esto permite usar los comandos desde el chat, bloques de comandos, funciones, etc.
 
 ## Eliminar
 
-`/particlepath remove <nombre>`
+/particlepath remove <nombre>
 
 Elimina completamente el camino guardado.
 
 ## Listar
 
-`/particlepath list`
+/particlepath list
 
 Muestra los caminos existentes.
 
 ## Estructura
 
 Cada camino guarda:
-
 - Nombre.
 - Partícula.
 - Lista ordenada de puntos.
