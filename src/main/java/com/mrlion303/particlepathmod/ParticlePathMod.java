@@ -11,6 +11,7 @@ public class ParticlePathMod {
     public ParticlePathMod() {
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
         MinecraftForge.EVENT_BUS.register(new ParticlePathEvents());
+        MinecraftForge.EVENT_BUS.register(new com.mrlion303.particlepathmod.event.SelectionCleanup());
     }
     private void registerCommands(RegisterCommandsEvent event) { ParticlePathCommands.register(event.getDispatcher()); }
     public static ParticlePathSavedData getData(net.minecraft.server.level.ServerLevel level) {
