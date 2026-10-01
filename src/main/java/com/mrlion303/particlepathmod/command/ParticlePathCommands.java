@@ -1,52 +1,165 @@
 package com.mrlion303.particlepathmod.command;
-import com.mrlion303.particlepathmod.ParticlePathMod;
-import com.mrlion303.particlepathmod.data.*;
-import com.mrlion303.particlepathmod.util.ParticleSpecParser;
+
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import net.minecraft.commands.*;
-import net.minecraft.core.BlockPos;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mrlion303.particlepathmod.ParticlePathMod;
+import com.mrlion303.particlepathmod.data.ParticlePath;
+import com.mrlion303.particlepathmod.data.ParticlePathSavedData;
+import com.mrlion303.particlepathmod.util.ParticleSpecParser;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
 import java.util.List;
+
 public final class ParticlePathCommands {
-    public static void register(CommandDispatcher<CommandSourceStack> d){
-        d.register(Commands.literal("particlepath").requires(s->s.hasPermission(2))
-        .then(Commands.literal("create").then(Commands.argument("name",StringArgumentType.word())
-        .then(Commands.argument("particle",StringArgumentType.greedyString()).executes(c->create(c.getSource(),StringArgumentType.getString(c,"name"),StringArgumentType.getString(c,"particle"))))))
-        .then(Commands.literal("show").then(Commands.argument("name",StringArgumentType.word()).executes(c->visible(c.getSource(),StringArgumentType.getString(c,"name"),true))))
-        .then(Commands.literal("hide").then(Commands.argument("name",StringArgumentType.word()).executes(c->visible(c.getSource(),StringArgumentType.getString(c,"name"),false))))
-        .then(Commands.literal("remove").then(Commands.argument("name",StringArgumentType.word()).executes(c->remove(c.getSource(),StringArgumentType.getString(c,"name")))))
-        .then(Commands.literal("list").executes(c->list(c.getSource()))));
+    private static final SuggestionProvider<CommandSourceStack> PARTICLE_SUGGESTIONS = (context, builder) ->
+            SharedSuggestionProvider.suggestResource(BuiltInRegistries.PARTICLE_TYPE.keySet(), builder);
+
+    private static SuggestionProvider<CommandSourceStack> pathSuggestions() {
+        return (context, builder) -> {
+            ParticlePathSavedData data = ParticlePathMod.getData(context.getSource().getLevel());
+            return SharedSuggestionProvider.suggest(data.getPaths().keySet(), builder);
+        };
     }
-    private static int create(CommandSourceStack s,String name,String particle){
-        ParticlePathSavedData d=ParticlePathMod.getData(s.getLevel());
-        if(d.contains(name)){s.sendFailure(Component.literal("Ya existe el camino '"+name+"'. Usa otro nombre."));return 0;}
-        try{
-            var player=s.getPlayerOrException();
-            List<BlockPos> selection=PathSelectionManager.get(player.getUUID());
-            if(selection.size()<2){s.sendFailure(Component.literal("Marca A y al menos B con el palo antes de crear el camino."));return 0;}
-            String normalizedParticle=ParticleSpecParser.normalize(particle);
-            if(ParticleSpecParser.parse(normalizedParticle)==null) throw new IllegalArgumentException("Partícula inválida.");
-            List<BlockPos> pts=PathSelectionManager.consumeSelection(player.getUUID());
-            d.put(new ParticlePath(name,normalizedParticle,pts,false));
-            int pointCount=pts.size();
-            s.sendSuccess(()->Component.literal("Camino '"+name+"' creado con "+pointCount+" puntos."),true);
+
+    public static void register(CommandDispatcher<CommandSourceStack> d) {
+        d.register(Commands.literal("particlepath").requires(s -> s.hasPermission(2))
+                .then(Commands.literal("create")
+                        .then(Commands.argument("name", StringArgumentType.word())
+                                .then(Commands.argument("particle", StringArgumentType.greedyString())
+                                        .suggests(PARTICLE_SUGGESTIONS)
+                                        .executes(c -> create(
+                                                c.getSource(),
+                                                StringArgumentType.getString(c, "name"),
+                                                StringArgumentType.getString(c, "particle"))))))
+                .then(Commands.literal("modify")
+                        .then(Commands.argument("name", StringArgumentType.word())
+                                .suggests(pathSuggestions())
+                                .then(Commands.argument("particle", StringArgumentType.greedyString())
+                                        .suggests(PARTICLE_SUGGESTIONS)
+                                        .executes(c -> modify(
+                                                c.getSource(),
+                                                StringArgumentType.getString(c, "name"),
+                                                StringArgumentType.getString(c, "particle"))))))
+                .then(Commands.literal("show")
+                        .then(Commands.argument("name", StringArgumentType.word())
+                                .suggests(pathSuggestions())
+                                .executes(c -> visible(
+                                        c.getSource(),
+                                        StringArgumentType.getString(c, "name"),
+                                        true))))
+                .then(Commands.literal("hide")
+                        .then(Commands.argument("name", StringArgumentType.word())
+                                .suggests(pathSuggestions())
+                                .executes(c -> visible(
+                                        c.getSource(),
+                                        StringArgumentType.getString(c, "name"),
+                                        false))))
+                .then(Commands.literal("remove")
+                        .then(Commands.argument("name", StringArgumentType.word())
+                                .suggests(pathSuggestions())
+                                .executes(c -> remove(
+                                        c.getSource(),
+                                        StringArgumentType.getString(c, "name")))))
+                .then(Commands.literal("list").executes(c -> list(c.getSource()))));
+    }
+
+    private static int create(CommandSourceStack s, String name, String particle) {
+        ParticlePathSavedData d = ParticlePathMod.getData(s.getLevel());
+        if (d.contains(name)) {
+            s.sendFailure(Component.literal("Ya existe el camino '" + name + "'. Usa otro nombre."));
+            return 0;
+        }
+
+        try {
+            var player = s.getPlayerOrException();
+            List<net.minecraft.core.BlockPos> selection = PathSelectionManager.get(player.getUUID());
+
+            if (selection.size() < 2) {
+                s.sendFailure(Component.literal("Marca A y al menos B con el palo antes de crear el camino."));
+                return 0;
+            }
+
+            String normalizedParticle = ParticleSpecParser.normalize(particle);
+            if (ParticleSpecParser.parse(normalizedParticle) == null) {
+                throw new IllegalArgumentException("Partícula inválida.");
+            }
+
+            List<net.minecraft.core.BlockPos> pts = PathSelectionManager.consumeSelection(player.getUUID());
+            d.put(new ParticlePath(name, normalizedParticle, pts, false));
+            int pointCount = pts.size();
+
+            sendGold(s, "Camino '" + name + "' creado con " + pointCount + " puntos.");
             return 1;
-        }catch(Exception e){s.sendFailure(Component.literal("Partícula inválida: "+particle));return 0;}
+        } catch (Exception e) {
+            s.sendFailure(Component.literal("Partícula inválida: " + particle));
+            return 0;
+        }
     }
-    private static int visible(CommandSourceStack s,String name,boolean value){
-        ParticlePath p=ParticlePathMod.getData(s.getLevel()).get(name);
-        if(p==null){s.sendFailure(Component.literal("No existe el camino '"+name+"'."));return 0;}
-        p.setVisible(value);ParticlePathMod.getData(s.getLevel()).setDirty();
-        s.sendSuccess(()->Component.literal("Camino '"+name+"' "+(value?"mostrado.":"ocultado.")),true);return 1;
+
+    private static int modify(CommandSourceStack s, String name, String particle) {
+        ParticlePathSavedData d = ParticlePathMod.getData(s.getLevel());
+        ParticlePath path = d.get(name);
+
+        if (path == null) {
+            s.sendFailure(Component.literal("No existe el camino '" + name + "'."));
+            return 0;
+        }
+
+        try {
+            String normalizedParticle = ParticleSpecParser.normalize(particle);
+            if (ParticleSpecParser.parse(normalizedParticle) == null) {
+                throw new IllegalArgumentException("Partícula inválida.");
+            }
+
+            path.setParticle(normalizedParticle);
+            d.setDirty();
+            sendGold(s, "Partícula del camino '" + name + "' cambiada a " + normalizedParticle + ".");
+            return 1;
+        } catch (Exception e) {
+            s.sendFailure(Component.literal("Partícula inválida: " + particle));
+            return 0;
+        }
     }
-    private static int remove(CommandSourceStack s,String name){
-        if(ParticlePathMod.getData(s.getLevel()).remove(name)==null){s.sendFailure(Component.literal("No existe el camino '"+name+"'."));return 0;}
-        s.sendSuccess(()->Component.literal("Camino '"+name+"' eliminado."),true);return 1;
+
+    private static int visible(CommandSourceStack s, String name, boolean value) {
+        ParticlePath p = ParticlePathMod.getData(s.getLevel()).get(name);
+
+        if (p == null) {
+            s.sendFailure(Component.literal("No existe el camino '" + name + "'."));
+            return 0;
+        }
+
+        p.setVisible(value);
+        ParticlePathMod.getData(s.getLevel()).setDirty();
+        sendGold(s, "Camino '" + name + "' " + (value ? "mostrado." : "ocultado."));
+        return 1;
     }
-    private static int list(CommandSourceStack s){
-        var d=ParticlePathMod.getData(s.getLevel());
-        s.sendSuccess(()->Component.literal(d.getPaths().isEmpty()?"No hay caminos creados.":"Caminos: "+String.join(", ",d.getPaths().keySet())),false);
+
+    private static int remove(CommandSourceStack s, String name) {
+        if (ParticlePathMod.getData(s.getLevel()).remove(name) == null) {
+            s.sendFailure(Component.literal("No existe el camino '" + name + "'."));
+            return 0;
+        }
+
+        sendGold(s, "Camino '" + name + "' eliminado.");
+        return 1;
+    }
+
+    private static int list(CommandSourceStack s) {
+        var d = ParticlePathMod.getData(s.getLevel());
+        sendGold(s, d.getPaths().isEmpty()
+                ? "No hay caminos creados."
+                : "Caminos: " + String.join(", ", d.getPaths().keySet()));
         return d.getPaths().size();
+    }
+
+    private static void sendGold(CommandSourceStack source, String message) {
+        source.sendSuccess(() -> Component.literal(message).withStyle(ChatFormatting.GOLD), true);
     }
 }
