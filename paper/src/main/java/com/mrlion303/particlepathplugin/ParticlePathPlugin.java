@@ -13,6 +13,7 @@ import org.bukkit.util.Vector;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
 import java.util.*;
 
 public class ParticlePathPlugin extends JavaPlugin implements Listener, TabExecutor {
