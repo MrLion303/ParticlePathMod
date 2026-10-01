@@ -1,4 +1,4 @@
-name: Build Forge Mod
+name: Build Particle Path - All Platforms
 
 on:
   push:
@@ -6,30 +6,76 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-forge:
+    name: Build Forge 1.20.1
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.8'
-
-      - name: Build mod
+      - name: Build Forge
         run: gradle build --no-daemon
-
-      - name: Upload JAR
+      - name: Upload Forge JAR
         uses: actions/upload-artifact@v4
         with:
-          name: ParticlePathMod
+          name: ParticlePathMod-Forge-1.20.1
           path: build/libs/*.jar
+          if-no-files-found: error
+
+  build-fabric:
+    name: Build Fabric 1.20.1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.8'
+      - name: Build Fabric
+        working-directory: fabric
+        run: gradle build --no-daemon
+      - name: Upload Fabric JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: ParticlePathMod-Fabric-1.20.1
+          path: fabric/build/libs/*.jar
+          if-no-files-found: error
+
+  build-paper:
+    name: Build Paper Plugin 1.20.1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.8'
+      - name: Build Paper plugin
+        working-directory: paper
+        run: gradle build --no-daemon
+      - name: Upload Paper JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: ParticlePathPlugin-Paper-1.20.1
+          path: paper/build/libs/*.jar
           if-no-files-found: error
