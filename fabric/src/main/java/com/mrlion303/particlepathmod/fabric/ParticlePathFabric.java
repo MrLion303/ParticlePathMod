@@ -66,7 +66,7 @@ public class ParticlePathFabric implements ModInitializer {
         });
 
         CommandRegistrationCallback.EVENT.register(this::registerCommands);
-        ServerTickEvents.END_SERVER_TICK.register(this::tick);
+        ServerTickEvents.END_SERVER_TICK.register(ParticlePathFabric::tick);
     }
 
     private void registerCommands(CommandDispatcher<ServerCommandSource> d, CommandRegistryAccess access, net.minecraft.server.command.CommandManager.RegistrationEnvironment env) {
