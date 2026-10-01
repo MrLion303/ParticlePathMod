@@ -1,5 +1,4 @@
 package com.mrlion303.particlepathmod.command;
-
 import com.mrlion303.particlepathmod.ParticlePathMod;
 import com.mrlion303.particlepathmod.data.*;
 import com.mrlion303.particlepathmod.util.ParticleSpecParser;
@@ -9,7 +8,6 @@ import net.minecraft.commands.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import java.util.List;
-
 public final class ParticlePathCommands {
     public static void register(CommandDispatcher<CommandSourceStack> d){
         d.register(Commands.literal("particlepath").requires(s->s.hasPermission(2))
@@ -25,10 +23,11 @@ public final class ParticlePathCommands {
         if(d.contains(name)){s.sendFailure(Component.literal("Ya existe el camino '"+name+"'. Usa otro nombre."));return 0;}
         try{
             var player=s.getPlayerOrException();
-            List<BlockPos> pts=PathSelectionManager.consumeSelection(player.getUUID());
+            List<BlockPos> pts=PathSelectionManager.get(player.getUUID());
             if(pts.size()<2){s.sendFailure(Component.literal("Marca A y al menos B con el palo antes de crear el camino."));return 0;}
             String normalizedParticle=ParticleSpecParser.normalize(particle);
             if(ParticleSpecParser.parse(normalizedParticle)==null) throw new IllegalArgumentException("Partícula inválida.");
+            pts=PathSelectionManager.consumeSelection(player.getUUID());
             d.put(new ParticlePath(name,normalizedParticle,pts,false));
             s.sendSuccess(()->Component.literal("Camino '"+name+"' creado con "+pts.size()+" puntos."),true);
             return 1;
